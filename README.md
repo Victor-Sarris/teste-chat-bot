@@ -96,3 +96,9 @@ Contribuições são bem-vindas! Sinta-se à vontade para:
 - Reportar problemas
 - Sugerir melhorias
 - Enviar pull requests
+
+# 📷 Midia 
+---
+
+![image](https://github.com/user-attachments/assets/514ee09a-aa91-4e10-bdaa-bffb5d12e7f4)
+
