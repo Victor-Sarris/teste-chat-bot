@@ -48,7 +48,7 @@ generation_config = {
 
 # Inicialização do modelo
 model = genai.GenerativeModel(
-    model_name="gemini-1.5",
+    model_name="gemini-2.5-flash",
     generation_config=generation_config,
     safety_settings=safety_settings
 )
@@ -71,43 +71,42 @@ def chat():
     try:
         user_message = request.json['message']
         chat_id = session.get('chat_id')
+        bot_response_text = ""
         
         # Inicializa uma nova sessão de chat se necessário
         if chat_id not in chat_sessions:
             chat = model.start_chat(history=[])
             chat_sessions[chat_id] = chat
             
-            # Busca o contexto relevante
-            context = embedding_manager.search_query("introdução")  # Busca contexto inicial
+            # Busca o contexto relevante para a introdução
+            context = embedding_manager.search_query("introdução")
             
-            # gemini inicial com instruções e contexto
+            # Prompt inicial com instruções e contexto
             initial_prompt = f"""Você é um especialista no assunto descrito no seguinte contexto:
 
 {context}
 
 Instruções importantes:
-1. Baseie suas respostas principalmente no contexto fornecido
-2. Você pode adicionar informações complementares sobre o tema, desde que sejam precisas e relevantes
-3. Se a pergunta fugir do tema do contexto, gentilmente redirecione para o assunto principal
-4. Use markdown quando apropriado para melhorar a legibilidade:
-   - **negrito** para termos importantes
-   - `código` para termos técnicos
-   - Listas numeradas para sequências
-   - Listas com bullets para itens relacionados
-   - ### para subtítulos quando necessário
-5. Mantenha suas respostas organizadas e fáceis de ler
-6. Responda sempre em português
+1. Baseie suas respostas principalmente no contexto fornecido.
+2. Você pode adicionar informações complementares sobre o tema, desde que sejam precisas e relevantes.
+3. Se a pergunta fugir do tema do contexto, gentilmente redirecione para o assunto principal.
+4. Use markdown quando apropriado para melhorar a legibilidade.
+5. Mantenha suas respostas organizadas e fáceis de ler.
+6. Responda sempre em português.
 
-Por favor, confirme que entendeu estas instruções respondendo com uma breve saudação."""
+Por favor, confirme que entendeu estas instruções respondendo com uma breve saudação de boas-vindas como assistente da Therapy."""
             
-            # Envia o prompt inicial
-            chat.send_message(initial_prompt)
-        
+            # Envia o prompt inicial para obter a saudação
+            initial_response = chat.send_message(initial_prompt)
+            bot_response_text += initial_response.text + "\\n\\n" # Acumula a saudação inicial
+
+        # Continua o chat com a mensagem do usuário
         chat = chat_sessions[chat_id]
         response = chat.send_message(user_message)
+        bot_response_text += response.text # Adiciona a resposta da pergunta atual
         
         return jsonify({
-            'response': response.text,
+            'response': bot_response_text,
             'status': 'success'
         })
         
